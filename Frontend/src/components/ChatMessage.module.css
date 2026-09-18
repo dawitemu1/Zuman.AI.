@@ -1,0 +1,384 @@
+/* ── Shared animation ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════ USER row ═══════════════════════════════════ */
+.userRow {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 0;
+  animation: fadeUp 0.18s ease;
+}
+
+.userBubble {
+  max-width: 80%;
+  background: var(--user-bubble-bg, #1a2d60);
+  color: var(--user-bubble-fg, #e8edf8);
+  border-radius: 16px;
+  border-bottom-right-radius: 4px;
+  padding: 10px 14px 7px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  word-break: break-word;
+  position: relative;
+}
+
+.plainText { white-space: pre-wrap; margin: 0; }
+
+.userActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.userBubble:hover .userActions { opacity: 1; }
+
+.miniBtn {
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+.miniBtn:hover { color: var(--text); }
+
+/* ════════════════ AI row ════════════════════════════════════ */
+.aiRow {
+  display: flex;
+  align-items: flex-end;   /* avatar tracks the bottom of content as it grows */
+  gap: 12px;
+  padding: 4px 0 12px;
+  animation: fadeUp 0.18s ease;
+}
+
+.aiAvatar {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+/* While generating — tracks the bottom of the growing text */
+.avatarBottom { align-self: flex-end; }
+
+/* After done — snaps to the top of the response */
+.avatarTop    { align-self: flex-start; }
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Spinning ring around the avatar while the AI is generating */
+.avatarSpin {
+  border: 2px solid transparent;
+  border-top-color: var(--text);
+  border-right-color: var(--text);
+  animation: avatarRotate 0.9s linear infinite;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+@keyframes avatarRotate {
+  to { transform: rotate(360deg); }
+}
+
+.aiContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-self: stretch;   /* fill full height so aiRow flex-end works correctly */
+}
+
+/* No bubble border — plain text on background */
+.aiBubble {
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+/* ── Streaming cursor ── */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--text);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 0.7s infinite;
+  border-radius: 1px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── Thinking dots ── */
+.thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+.thinkLabel {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+.thinkDot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: thinkBounce 1.3s infinite ease-in-out;
+}
+.thinkDot:nth-child(2) { animation-delay: 0.18s; }
+.thinkDot:nth-child(3) { animation-delay: 0.36s; }
+@keyframes thinkBounce {
+  0%,80%,100% { transform: translateY(0);    opacity: 0.35; }
+  40%          { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ════════════════ AI action bar ════════════════════════════ */
+.aiActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.aiRow:hover .aiActions { opacity: 1; }
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.actionBtn:hover {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.liked    { color: #22c55e !important; border-color: #22c55e !important; }
+.disliked { color: var(--danger, #ef4444) !important; border-color: var(--danger, #ef4444) !important; }
+.speaking { color: var(--accent) !important; }
+
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.ttsErr { font-size: 11px; color: var(--danger, #ef4444); margin-left: 4px; }
+
+/* ════════════════ Markdown typography ══════════════════════ */
+
+/* Paragraphs — spaced like ChatGPT */
+.aiBubble p,
+.p {
+  margin: 0 0 12px;
+  line-height: 1.75;
+}
+.aiBubble p:last-child,
+.p:last-child { margin-bottom: 0; }
+
+/* Headings */
+.h1 {
+  font-size: 1.4em;
+  font-weight: 700;
+  margin: 20px 0 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+.h2 {
+  font-size: 1.2em;
+  font-weight: 700;
+  margin: 18px 0 6px;
+}
+.h3 {
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 14px 0 5px;
+}
+.h4 {
+  font-size: 1em;
+  font-weight: 600;
+  margin: 12px 0 4px;
+}
+
+/* Lists */
+.ul {
+  list-style: disc;
+  padding-left: 24px;
+  margin: 6px 0 12px;
+}
+.ol {
+  list-style: decimal;
+  padding-left: 24px;
+  margin: 6px 0 12px;
+}
+.li {
+  margin-bottom: 5px;
+  line-height: 1.7;
+}
+/* Nested lists */
+.ul .ul, .ul .ol,
+.ol .ul, .ol .ol {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+/* Inline text styles */
+.strong { font-weight: 700; }
+.em     { font-style: italic; }
+.del    { text-decoration: line-through; opacity: 0.65; }
+
+/* Blockquote */
+.blockquote {
+  border-left: 3px solid var(--muted, #888);
+  padding: 6px 14px;
+  color: var(--muted, #888);
+  margin: 10px 0;
+  font-style: italic;
+  background: rgba(128,128,128,0.06);
+  border-radius: 0 4px 4px 0;
+}
+
+.hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.link {
+  color: var(--accent, #3b82f6);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link:hover { opacity: 0.8; }
+
+/* ── Tables (GFM) ── */
+.tableWrap {
+  overflow-x: auto;
+  margin: 14px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.table {
+  border-collapse: collapse;
+  font-size: 14px;
+  width: 100%;
+}
+.thead { background: var(--surface); }
+.th, .td {
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  text-align: left;
+}
+.th { font-weight: 600; }
+
+/* ── Inline code ── */
+.inlineCode {
+  background: var(--inline-code-bg, rgba(128,128,128,0.15));
+  color: var(--inline-code-fg, #e2e8f0);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 0.875em;
+}
+
+/* ── Code block ── */
+.codeWrapper {
+  position: relative;
+  margin: 12px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0d1117;  /* github-dark background */
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.codeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.06);
+  padding: 6px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.codeLang {
+  font-size: 12px;
+  font-family: "Fira Code", monospace;
+  color: #8b949e;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
+.codeCopyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 5px;
+  padding: 3px 9px;
+  color: #8b949e;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.codeCopyBtn:hover {
+  color: #e6edf3;
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
+}
+
+.codeBlock {
+  margin: 0;
+  padding: 14px 18px;
+  overflow-x: auto;
+  font-family: "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 13.5px;
+  line-height: 1.65;
+  /* highlight.js github-dark handles token colours */
+}
+
+/* ── Responsive chat messages ── */
+@media (max-width: 420px) {
+  .userBubble {
+    max-width: 90%;
+    font-size: 13px;
+    padding: 9px 12px 6px;
+  }
+  .aiBubble { font-size: 13px; }
+  .aiAvatar { width: 26px; height: 26px; min-width: 26px; }
+  .aiRow    { gap: 8px; }
+  .actionBtn { padding: 3px 6px; font-size: 11px; }
+  .codeBlock { font-size: 12px; padding: 10px 12px; }
+  .th, .td   { padding: 6px 10px; font-size: 12px; }
+}
+
+@media (max-width: 380px) {
+  .userBubble { max-width: 95%; padding: 8px 10px 5px; }
+  .h1 { font-size: 1.2em; }
+  .h2 { font-size: 1.1em; }
+}

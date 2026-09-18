@@ -1,0 +1,28 @@
+/* ── Scrollable chat column inside the widget ── */
+.window {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+  transition: background 0.2s;
+  -webkit-overflow-scrolling: touch;
+}
+
+.messages {
+  flex: 1;
+  padding: 16px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+@media (max-width: 420px) {
+  .messages { padding: 12px 10px 6px; }
+}
+
+@media (max-width: 380px) {
+  .messages { padding: 10px 8px 4px; }
+}

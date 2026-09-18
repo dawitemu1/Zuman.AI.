@@ -1,0 +1,155 @@
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Selam purple brand palette ────────────────────────────── */
+:root {
+  --purple:        #b60dd4;
+  --purple-dark:   #8a0aa0;
+  --purple-deeper: #6b0880;
+  --purple-light:  #d040ef;
+  --purple-glow:   rgba(182, 13, 212, 0.35);
+  --gold:          #f0c040;
+
+  /* Widget sizing — desktop default */
+  --widget-w: 400px;
+  --widget-h: 600px;
+  --launcher-size: 64px;
+  --launcher-r: 50px;   /* distance from corner */
+}
+
+/* ── Dark theme (default) ──────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --bg:             #0e0514;
+  --surface:        #180720;
+  --border:         #30104a;
+  --accent:         #b60dd4;
+  --accent-h:       #d040ef;
+  --user-bg:        #250b38;
+  --ai-bg:          #0e0514;
+  --text:           #f0e8ff;
+  --muted:          #9070a8;
+  --danger:         #ff4466;
+  --send-bg:        #b60dd4;
+  --send-fg:        #ffffff;
+  --send-h:         #d040ef;
+  --code-bg:        #0a0310;
+  --code-border:    #30104a;
+  --inline-code-bg: #220840;
+  --inline-code-fg: #e8b0ff;
+  --user-bubble-bg: #250b38;
+  --user-bubble-bd: #40186a;
+  --user-bubble-fg: #f0e8ff;
+  --radius:         12px;
+}
+
+/* ── Light theme ───────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:             #fdf5ff;
+  --surface:        #ffffff;
+  --border:         #e8c8f5;
+  --accent:         #b60dd4;
+  --accent-h:       #8a0aa0;
+  --user-bg:        #f5e0ff;
+  --ai-bg:          #ffffff;
+  --text:           #1a0025;
+  --muted:          #8050a0;
+  --danger:         #cc0033;
+  --send-bg:        #b60dd4;
+  --send-fg:        #ffffff;
+  --send-h:         #8a0aa0;
+  --code-bg:        #faf0ff;
+  --code-border:    #e8c8f5;
+  --inline-code-bg: #f0d0ff;
+  --inline-code-fg: #6b0880;
+  --user-bubble-bg: #f0d8ff;
+  --user-bubble-bd: #d8a0f0;
+  --user-bubble-fg: #1a0025;
+  --radius:         12px;
+}
+
+/* ── Base ───────────────────────────────────────────────────── */
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+body { background: transparent; }
+
+html, body, #root, #root * {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+}
+
+#root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ════════════════════════════════════════════════════════════ */
+
+/* Large desktop (≥1440px) */
+@media (min-width: 1440px) {
+  :root {
+    --widget-w: 440px;
+    --widget-h: 660px;
+    --launcher-size: 68px;
+    --launcher-r: 56px;
+  }
+}
+
+/* Standard desktop / laptop (1024–1439px) — defaults apply */
+
+/* Tablet landscape (768–1023px) */
+@media (max-width: 1023px) {
+  :root {
+    --widget-w: 380px;
+    --widget-h: 580px;
+    --launcher-size: 62px;
+    --launcher-r: 40px;
+  }
+  html { font-size: 14.5px; }
+}
+
+/* Tablet portrait (600–767px) */
+@media (max-width: 767px) {
+  :root {
+    --widget-w: 340px;
+    --widget-h: 520px;
+    --launcher-size: 58px;
+    --launcher-r: 32px;
+  }
+  html { font-size: 14px; }
+}
+
+/* Large phone (421–599px) */
+@media (max-width: 599px) {
+  :root {
+    --widget-w: calc(100vw - 16px);
+    --widget-h: calc(100dvh - 100px);
+    --launcher-size: 56px;
+    --launcher-r: 22px;
+  }
+  html { font-size: 14px; }
+}
+
+/* Small phone (≤420px) — full screen widget */
+@media (max-width: 420px) {
+  :root {
+    --widget-w: 100vw;
+    --widget-h: 100dvh;
+    --launcher-size: 54px;
+    --launcher-r: 18px;
+  }
+  html { font-size: 13.5px; }
+}

@@ -1,0 +1,29 @@
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Frontend dependencies and build output
+node_modules/
+dist/
+
+# Local model, training, and cache artifacts
+*.safetensors
+*.pt
+*.pth
+*.bin
+*.ckpt
+unsloth_compiled_cache/
+banking-model-gemma4-12b/checkpoint-*/
+banking-model-gemma4-12b_full_lora/checkpoint-*/
+
+# Oversized generated training data
+Final/*.jsonl
+
+# Installer binaries
+*.exe
+
+# Vendored repository with its own Git history
+trl/

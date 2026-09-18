@@ -1,0 +1,500 @@
+/* ══════════════════════════════════════════════════════════════
+   Selam Chatbot — floating widget  (purple #b60dd4 theme)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Shared keyframes ───────────────────────────────────────── */
+@keyframes spin    { to { transform: rotate(360deg);  } }
+@keyframes spinRev { to { transform: rotate(-360deg); } }
+
+@keyframes orbit {
+  from { transform: rotate(0deg)   translateX(var(--r)) rotate(0deg);   }
+  to   { transform: rotate(360deg) translateX(var(--r)) rotate(-360deg); }
+}
+
+@keyframes wavePulse {
+  0%,100% { opacity: 0.55; transform: scale(1);    }
+  50%     { opacity: 1;    transform: scale(1.08); }
+}
+
+@keyframes borderDance {
+  0%   { border-color: #b60dd4; }
+  25%  { border-color: #f0c040; }
+  50%  { border-color: #d040ef; }
+  75%  { border-color: #f0c040; }
+  100% { border-color: #b60dd4; }
+}
+
+@keyframes logoFloat {
+  0%,100% { transform: translateY(0);   }
+  50%     { transform: translateY(-4px); }
+}
+
+@keyframes floaterPulse {
+  0%,100% { box-shadow: 0 0 0 5px rgba(182,13,212,0.12), 0 0 22px rgba(182,13,212,0.6), 0 0 50px rgba(182,13,212,0.22); }
+  50%     { box-shadow: 0 0 0 9px rgba(182,13,212,0.07), 0 0 36px rgba(182,13,212,0.9), 0 0 80px rgba(182,13,212,0.38); }
+}
+
+@keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+@keyframes bubblePop {
+  from { opacity:0; transform:translateX(-18%) scale(0.72); }
+  to   { opacity:1; transform:translateX(-18%) scale(1);    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FLOATER — wandering avatar with rich orbit rings
+   ══════════════════════════════════════════════════════════════ */
+
+.floater {
+  position: fixed;
+  right: var(--launcher-r, 42px);
+  bottom: var(--launcher-r, 42px);
+  width:  var(--launcher-size, 68px);
+  height: var(--launcher-size, 68px);
+  cursor: pointer;
+  pointer-events: all;
+  z-index: 10000;
+  transition: opacity 0.25s ease;
+}
+
+/* Flying to corner */
+.floaterFlying {
+  left:    calc(100vw - 48px) !important;
+  top:     calc(100vh - 48px) !important;
+  opacity: 0;
+  transition:
+    left    0.5s cubic-bezier(0.55, 0, 1, 0.45),
+    top     0.5s cubic-bezier(0.55, 0, 1, 0.45),
+    opacity 0.45s ease !important;
+}
+
+/* ── Avatar ── */
+.floaterImg {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(182,13,212,0.75);
+  display: block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: floaterPulse 2.6s ease-in-out infinite;
+}
+.floater:hover .floaterImg  { transform: scale(1.1);  }
+.floater:active .floaterImg { transform: scale(0.93); }
+/* Stop mid-glide when cursor is over the avatar */
+.floater:hover {
+  transition: left 0s, top 0s;
+}
+/* Freeze position instantly when hovered */
+.floater:hover {
+  transition:
+    left  0s,
+    top   0s;
+}
+
+/* Responsive floater size */
+@media (max-width: 599px) {
+  .floater { width: 58px; height: 58px; }
+  .floaterImg { width: 58px; height: 58px; }
+  .floaterRing1 { width: 78px; height: 78px; margin-top: -39px; margin-left: -39px; }
+  .floaterRing2 { width: 92px; height: 92px; margin-top: -46px; margin-left: -46px; }
+  .floaterRing3 { width: 106px; height: 106px; margin-top: -53px; margin-left: -53px; }
+  .floaterRing4 { width: 118px; height: 118px; margin-top: -59px; margin-left: -59px; }
+}
+
+/* ── Ring 1: close purple arc, spins forward ── */
+.floaterRing1 {
+  position: absolute;
+  top: 50%; left: 50%;
+  width:  92px; height: 92px;
+  margin-top: -46px; margin-left: -46px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  border-top-color:   #b60dd4;
+  border-right-color: #b60dd4;
+  animation: spin 1.7s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Ring 2: medium gold arc, spins reverse ── */
+.floaterRing2 {
+  position: absolute;
+  top: 50%; left: 50%;
+  width:  108px; height: 108px;
+  margin-top: -54px; margin-left: -54px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-bottom-color: #f0c040;
+  border-left-color:   #f0c040;
+  animation: spinRev 2.8s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Ring 3: outer dashed glow ring, slow spin ── */
+.floaterRing3 {
+  position: absolute;
+  top: 50%; left: 50%;
+  width:  124px; height: 124px;
+  margin-top: -62px; margin-left: -62px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(182,13,212,0.45);
+  animation: spin 5s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Ring 4: wave pulse ring ── */
+.floaterRing4 {
+  position: absolute;
+  top: 50%; left: 50%;
+  width:  140px; height: 140px;
+  margin-top: -70px; margin-left: -70px;
+  border-radius: 50%;
+  border: 1px solid rgba(240,192,64,0.3);
+  animation: wavePulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Orbiting dot 1 (purple) ── */
+.floaterDot1 {
+  --r: 50px;
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  margin-top: -4px; margin-left: -4px;
+  border-radius: 50%;
+  background: #b60dd4;
+  box-shadow: 0 0 8px 3px rgba(182,13,212,0.7);
+  animation: orbit 2.2s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Orbiting dot 2 (gold, offset phase) ── */
+.floaterDot2 {
+  --r: 58px;
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 6px; height: 6px;
+  margin-top: -3px; margin-left: -3px;
+  border-radius: 50%;
+  background: #f0c040;
+  box-shadow: 0 0 7px 3px rgba(240,192,64,0.7);
+  animation: orbit 3.4s linear infinite;
+  animation-delay: -1.7s;
+  pointer-events: none;
+}
+
+/* ── Orbiting dot 3 (small white, opposite) ── */
+.floaterDot3 {
+  --r: 54px;
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 5px; height: 5px;
+  margin-top: -2.5px; margin-left: -2.5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 0 6px 2px rgba(255,255,255,0.5);
+  animation: orbit 2.8s linear infinite reverse;
+  animation-delay: -0.9s;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HEADER LOGO — rings/dots always revolving,
+   avatar image spins only when generating a response
+   ══════════════════════════════════════════════════════════════ */
+
+.headerLogoWrap {
+  position: relative;
+  width:  44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* ── Header ring — always spinning ── */
+.headerLogoRing {
+  position: absolute;
+  top: 50%; left: 50%;
+  width:  60px; height: 60px;
+  margin-top: -30px; margin-left: -30px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  border-top-color:   #f0c040;
+  border-right-color: #f0c040;
+  pointer-events: none;
+  animation: spin 1.6s linear infinite;
+}
+
+/* Orbiting dots — always orbiting */
+.headerDot1,
+.headerDot2 {
+  position: absolute;
+  top: 50%; left: 50%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.headerDot1 {
+  --r: 32px;
+  width: 6px; height: 6px;
+  margin-top: -3px; margin-left: -3px;
+  background: #f0c040;
+  box-shadow: 0 0 6px 2px rgba(240,192,64,0.8);
+  animation: orbit 1.9s linear infinite;
+}
+
+.headerDot2 {
+  --r: 32px;
+  width: 5px; height: 5px;
+  margin-top: -2.5px; margin-left: -2.5px;
+  background: #d060f8;
+  box-shadow: 0 0 6px 2px rgba(182,13,212,0.75);
+  animation: orbit 2.8s linear infinite reverse;
+  animation-delay: -1.4s;
+}
+
+/* Avatar — floats always, SPINS only when generating */
+.headerAvatar {
+  position: relative;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(240,192,64,0.65);
+  animation: logoFloat 3s ease-in-out infinite;
+}
+.headerAvatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s;
+}
+/* When generating: the image itself rotates inside the circular clip */
+.widgetHeaderGenerating .headerAvatar img {
+  animation: spin 1.0s linear infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WIDGET PANEL
+   ══════════════════════════════════════════════════════════════ */
+
+.widget {
+  position: fixed;
+  bottom: var(--launcher-r, 42px);
+  right:  var(--launcher-r, 42px);
+  width:  var(--widget-w);
+  height: var(--widget-h);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow:
+    0 24px 80px rgba(182,13,212,0.35),
+    0 8px 24px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(182,13,212,0.25);
+  pointer-events: all;
+  transform-origin: bottom right;
+  transition: opacity 0.25s ease, transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 10000;
+}
+
+.widgetEnter   { opacity: 0; transform: scale(0.55) translateY(48px); }
+.widgetVisible { opacity: 1; transform: scale(1)    translateY(0);    }
+.widgetExit    { opacity: 0; transform: scale(0.65) translateY(36px); }
+
+/* Full-screen on small phones */
+@media (max-width: 420px) {
+  .widget {
+    bottom: 0; right: 0;
+    border-radius: 0;
+    width: 100vw;
+    height: 100dvh;
+  }
+}
+
+/* ── Header ── */
+.widgetHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  background: linear-gradient(135deg, var(--purple-deeper,#6b0880) 0%, var(--purple,#b60dd4) 60%, var(--purple-light,#d040ef) 100%);
+  flex-shrink: 0;
+  position: relative;
+  overflow: visible;
+}
+.widgetHeader::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Compact header on very small screens */
+@media (max-width: 380px) {
+  .widgetHeader { padding: 10px 10px; gap: 7px; }
+  .headerName   { font-size: 13px; }
+  .headerSub    { font-size: 10px; }
+  .cbeLogo      { display: none; }
+}
+
+.headerInfo { flex: 1; min-width: 0; }
+.headerName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+.headerSub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+.onlineDot {
+  width: 7px; height: 7px;
+  background: #4ade80;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2.5px rgba(74,222,128,0.35);
+}
+
+.cbeLogo {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f0c040;
+  letter-spacing: 0.07em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-left: auto;
+  margin-right: 6px;
+  flex-shrink: 0;
+  border: 1.5px solid;
+  animation: borderDance 3s linear infinite;
+}
+
+.headerBtn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.13);
+  color: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  /* Larger tap target on touch devices */
+  touch-action: manipulation;
+}
+.headerBtn:hover { background: rgba(255,255,255,0.24); color: #fff; }
+
+/* ── Body ── */
+.widgetBody {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SPEECH BUBBLE  (typewriter)
+   ══════════════════════════════════════════════════════════════ */
+
+.speechBubble {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  right: 0;
+  left: auto;
+  transform: none;
+  background: #fff;
+  color: #1a0025;
+  border-radius: 14px 14px 14px 4px;
+  padding: 10px 14px;
+  min-width: 200px;
+  max-width: min(340px, calc(100vw - 88px));
+  font-size: 13px;
+  line-height: 1.5;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  box-shadow: 0 6px 28px rgba(182,13,212,0.22), 0 2px 8px rgba(0,0,0,0.14);
+  border: 1.5px solid rgba(182,13,212,0.28);
+  pointer-events: none;
+  z-index: 20;
+  white-space: normal;
+  word-break: break-word;
+  animation: bubblePop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* Keep bubble on-screen on small devices */
+@media (max-width: 599px) {
+  .speechBubble {
+    right: 12px;
+    left: auto;
+    transform: none;
+    min-width: auto;
+    max-width: calc(100vw - 32px);
+    font-size: 12px;
+    padding: 8px 11px;
+  }
+  .speechTail {
+    right: 26px;
+    left: auto;
+    transform: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .speechBubble {
+    right: 12px;
+    left: auto;
+    transform: none;
+    max-width: calc(100vw - 24px);
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+  .speechTail {
+    right: 22px;
+    left: auto;
+    transform: none;
+  }
+}
+
+.speechTail {
+  position: absolute;
+  bottom: -9px;
+  right: 18px;
+  left: auto;
+  width:0; height:0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 9px solid #fff;
+}
+
+.cursor {
+  display: inline-block;
+  color: #b60dd4;
+  font-weight: 300;
+  animation: cursorBlink 0.7s step-start infinite;
+  margin-left: 1px;
+}
+.cursorErasing {
+  color: #999;
+  animation: cursorBlink 0.32s step-start infinite;
+}
+
+[data-theme="dark"] .speechBubble {
+  background: #200535;
+  color: #f0e8ff;
+  border-color: rgba(182,13,212,0.5);
+}
+[data-theme="dark"] .speechTail { border-top-color: #200535; }
