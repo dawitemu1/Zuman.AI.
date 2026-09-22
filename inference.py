@@ -148,7 +148,7 @@ def _is_question_echo(question: str, answer: str) -> bool:
 
 def _is_allowed_conversation(question: str) -> bool:
     """Allow greetings and assistant-identity questions through the model."""
-    normalized = re.sub(r"[^a-z0-9]+", " ", question.casefold()).strip()
+    normalized = re.sub(r"[^a-z0-9\u1200-\u137f]+", " ", question.casefold()).strip()
     return bool(re.fullmatch(
         r"(?:hi|hello|hey|good morning|good afternoon|good evening|who are you|what are you|"
         r"how are you|ati eenyu|eenyu ati)",
@@ -535,6 +535,31 @@ def _is_cbe_question(question: str) -> bool:
     ))
 
 
+def _out_of_scope_reply(question: str, language: str) -> str | None:
+    """Prevent the banking model from answering unrelated topics as a generic guide."""
+    normalized = re.sub(r"[^a-z0-9]+", " ", question.casefold()).strip()
+    social_message = bool(re.fullmatch(
+        r"(?:hi|hello|hey|selam|good morning|good afternoon|good evening|"
+        r"thanks|thanks a lot|thank you|thank you very much|many thanks|galatoomi|you are helpful|who are you|what are you|"
+        r"what can you do|how are you|ሰላም|እንዴት ነህ|አመሰግናለሁ|እናመሰግናለን)",
+        normalized,
+    ))
+    cbe_context = bool(re.search(
+        r"\b(?:cbe|commercial\s+bank|bank|banking|account|balance|deposit|"
+        r"withdraw|transfer|send money|receive money|payment|transaction|card|"
+        r"atm|loan|credit|birr|cyberbank|mobile banking|internet banking|branch|"
+        r"savings|customer care|951|ethiopia|financial|ባንክ|ሂሳብ|ገንዘብ|ብድር|ካርድ|ክፍያ|ኤቲኤም|ቅርንጫፍ)\b",
+        normalized,
+    ))
+    if social_message or cbe_context or not normalized:
+        return None
+    if language == "am":
+        return "እኔ የኢትዮጵያ ንግድ ባንክ የባንክ ረዳት ነኝ። ስለ ኢትዮጵያ ንግድ ባንክ ሂሳቦች፣ ክፍያዎች፣ ካርዶች ወይም ብድሮች ልረዳዎ እችላለሁ። ለሌላ ጉዳይ ትክክለኛ መረጃ የሚመለከተውን ይፋዊ ተቋም ያነጋግሩ።"
+    if re.search(r"\b(?:visa|immigration|immigrant|embassy|consulate|ds[ -]?160)\b", normalized):
+        return "I’m the Commercial Bank of Ethiopia banking assistant, so I can’t provide immigration instructions. Please check the official U.S. visa website at https://travel.state.gov/content/travel/en/us-visas.html or contact the nearest U.S. Embassy for current guidance. I can help with CBE banking services."
+    return "I’m the Commercial Bank of Ethiopia banking assistant. I can help with CBE accounts, payments, cards, loans, transfers, and other banking services. For this unrelated topic, please consult the responsible official institution or its official website for accurate information."
+
+
 def _detect_language_from_text(text: str) -> str:
     if not text or not text.strip():
         return "en"
@@ -622,6 +647,7 @@ WARMUP_NEW_TOKENS = 8
 
 SYSTEM_PROMPT = """
 You are the official Multilingual AI Banking Assistant for the Commercial Bank of Ethiopia (CBE) (የኢትዮጵያ ንግድ ባንክ).
+Only answer questions related to CBE banking products, services, branches, accounts, payments, cards, loans, and customer support. Allow natural greetings, gratitude, identity questions, and capability questions. For other unrelated topics, briefly explain that you are a CBE banking assistant and recommend the responsible official institution or its official website. Do not provide generic step-by-step instructions for unrelated topics.
 
 SCOPE: Use the fine-tuned CBE banking knowledge as the primary context and answer the exact question naturally and reasonably. Prioritize CBE accounts, branches, ATMs, cards, loans, payments, CBE Birr, CBE CyberBank, services, policies, and customer support. Greetings and identity questions such as "hello", "who are you?", and "what can you do?" must receive a natural helpful answer describing this CBE banking assistant. Do not repeat training instructions, chat markers, or generic refusal text. Do not invent names, fees, requirements, limits, or policies; when the trained context does not contain enough information, say that the information is not available and suggest contacting CBE Customer Care at 951 or a branch.
 
@@ -820,6 +846,10 @@ else:
 def ask_interactive(user_question: str, is_warmup=False):
     """Generates a response and handles tokenization correctly."""
     detected_lang = _detect_language_from_text(user_question)
+    out_of_scope_reply = _out_of_scope_reply(user_question, detected_lang)
+    if out_of_scope_reply is not None and not is_warmup:
+        print(f"Bot: {out_of_scope_reply}", flush=True)
+        return
     verified_reply = _verified_link_reply(user_question, detected_lang)
     if verified_reply is not None and not is_warmup:
         print(f"Bot: {verified_reply}", flush=True)

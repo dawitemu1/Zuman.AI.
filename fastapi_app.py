@@ -170,6 +170,7 @@ _LANG_CODE_TO_NAME = {
 
 CBE_SYSTEM_INSTRUCTION = """
 You are the official Multilingual AI Banking Assistant for the Commercial Bank of Ethiopia (CBE) (የኢትዮጵያ ንግድ ባንክ).
+Only answer questions related to CBE banking products, services, branches, accounts, payments, cards, loans, and customer support. For unrelated topics such as visas, immigration, travel, or government applications, briefly explain that you are a CBE banking assistant and redirect the customer to the relevant official authority. Do not provide generic step-by-step instructions for those topics.
 Express financial values and transaction caps only in Ethiopian Birr: use Qarshii in Afaan Oromoo, ብር in Amharic, and ETB or Birr in English. Never use US Dollars or $.
 A standard CBE savings account requires a minimum initial deposit of 50 ETB, and valid identification such as a renewed Kebele ID, Passport, or Digital ID is mandatory.
 Use CBE Birr or CBE Mobile Banking App for mobile banking and CBE CyberBank for internet banking.
@@ -183,7 +184,7 @@ def _verified_link_reply(question: str, language: str) -> str | None:
     """Answer direct CBE link requests from verified URLs instead of model guesses."""
     if language != "en":
         return None
-    normalized = re.sub(r"[^a-z0-9]+", " ", question.casefold()).strip()
+    normalized = re.sub(r"[^a-z0-9\u1200-\u137f]+", " ", question.casefold()).strip()
     asks_for_link = bool(re.search(r"\b(?:url|link|website|portal|online|apply|application|mapply)\b", normalized))
     asks_about_loan = bool(re.search(r"\b(?:loan|credit|borrow|mapply)\b", normalized))
     if asks_for_link and asks_about_loan:
@@ -195,6 +196,31 @@ def _verified_link_reply(question: str, language: str) -> str | None:
     if asks_for_link and re.search(r"\b(?:cbe|bank|official)\b", normalized):
         return "The official Commercial Bank of Ethiopia website is https://combanketh.et/home."
     return None
+
+
+def _out_of_scope_reply(question: str, language: str) -> str | None:
+    """Keep unrelated requests out of CBE banking generation."""
+    normalized = re.sub(r"[^a-z0-9]+", " ", question.casefold()).strip()
+    social_message = bool(re.fullmatch(
+        r"(?:hi|hello|hey|selam|good morning|good afternoon|good evening|"
+        r"thanks|thanks a lot|thank you|thank you very much|many thanks|galatoomi|you are helpful|who are you|what are you|"
+        r"what can you do|how are you|ሰላም|እንዴት ነህ|አመሰግናለሁ|እናመሰግናለን)",
+        normalized,
+    ))
+    cbe_context = bool(re.search(
+        r"\b(?:cbe|commercial\s+bank|bank|banking|account|balance|deposit|"
+        r"withdraw|transfer|send money|receive money|payment|transaction|card|"
+        r"atm|loan|credit|birr|cyberbank|mobile banking|internet banking|branch|"
+        r"savings|customer care|951|ethiopia|financial|ባንክ|ሂሳብ|ገንዘብ|ብድር|ካርድ|ክፍያ|ኤቲኤም|ቅርንጫፍ)\b",
+        normalized,
+    ))
+    if social_message or cbe_context or not normalized:
+        return None
+    if language == "am":
+        return "እኔ የኢትዮጵያ ንግድ ባንክ የባንክ ረዳት ነኝ። ስለ ኢትዮጵያ ንግድ ባንክ ሂሳቦች፣ ክፍያዎች፣ ካርዶች ወይም ብድሮች ልረዳዎ እችላለሁ። ለሌላ ጉዳይ ትክክለኛ መረጃ የሚመለከተውን ይፋዊ ተቋም ያነጋግሩ።"
+    if re.search(r"\b(?:visa|immigration|immigrant|embassy|consulate|ds[ -]?160)\b", normalized):
+        return "I’m the Commercial Bank of Ethiopia banking assistant, so I can’t provide immigration instructions. Please check the official U.S. visa website at https://travel.state.gov/content/travel/en/us-visas.html or contact the nearest U.S. Embassy for current guidance. I can help with CBE banking services."
+    return "I’m the Commercial Bank of Ethiopia banking assistant. I can help with CBE accounts, payments, cards, loans, transfers, and other banking services. For this unrelated topic, please consult the responsible official institution or its official website for accurate information."
 
 
 def _detect_user_language(messages: list[dict]) -> str:
@@ -670,6 +696,9 @@ def chat(req: ChatRequest):
     )
     stored_messages = _load_session_messages(req.session_id) if req.session_id else []
     language = _detect_user_language(messages)
+    out_of_scope_reply = _out_of_scope_reply(last_user_message, language)
+    if out_of_scope_reply is not None:
+        return ChatResponse(reply=out_of_scope_reply, model=LOCAL_BASE_MODEL, usage={"source": "scope-guard"})
     verified_reply = _verified_link_reply(last_user_message, language)
     if verified_reply is not None:
         if req.session_id:
@@ -750,6 +779,16 @@ def v1_chat_completions(payload: dict = Body(...), authorization: str | None = H
         (message.get("content", "") for message in reversed(messages) if message.get("role") == "user"),
         "",
     )
+    out_of_scope_reply = _out_of_scope_reply(last_user_message, user_lang)
+    if out_of_scope_reply is not None:
+        return {
+            "id": f"cmpl-{int(time.time())}",
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": LOCAL_BASE_MODEL,
+            "choices": [{"index": 0, "message": {"role": "assistant", "content": out_of_scope_reply}, "finish_reason": "stop"}],
+            "usage": {"prompt_tokens": 0, "completion_tokens": len(out_of_scope_reply.split()), "total_tokens": len(out_of_scope_reply.split())},
+        }
     verified_reply = _verified_link_reply(last_user_message, user_lang)
     if verified_reply is not None:
         return {
@@ -886,9 +925,14 @@ async def chat_stream(req: ChatRequest):
         "",
     )
     language = _detect_user_language(messages)
+    out_of_scope_reply = _out_of_scope_reply(last_user_message, language)
     verified_reply = _verified_link_reply(last_user_message, language)
     async def generate() -> AsyncGenerator[str, None]:
         try:
+            if out_of_scope_reply is not None:
+                yield f"data: {json.dumps({'token': out_of_scope_reply})}\n\n"
+                yield f"data: {json.dumps({'done': True})}\n\n"
+                return
             if verified_reply is not None:
                 yield f"data: {json.dumps({'token': verified_reply})}\n\n"
                 yield f"data: {json.dumps({'done': True})}\n\n"
